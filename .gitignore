@@ -19,6 +19,8 @@ pnpm-workspace.yaml
 /.next/
 /out/
 
+/.vscode
+
 # production
 /build
 
