@@ -63,17 +63,187 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Dashboard Mockup Placeholder */}
+            {/* Dashboard Mockup */}
             <div className="mt-16 rounded-xl border bg-card text-card-foreground shadow-2xl mx-auto max-w-5xl overflow-hidden">
               <div className="border-b bg-muted/40 p-2 flex gap-2">
                 <div className="w-3 h-3 rounded-full bg-red-400"></div>
                 <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
                 <div className="w-3 h-3 rounded-full bg-green-400"></div>
               </div>
-              <div className="p-8 md:p-12 min-h-[300px] flex items-center justify-center bg-gradient-to-br from-background to-muted/50">
-                <div className="text-center space-y-4">
-                  <BarChart3 className="w-16 h-16 text-muted-foreground/30 mx-auto" />
-                  <p className="text-muted-foreground">Interactive Dashboard Preview</p>
+              
+              {/* Dashboard Header */}
+              <div className="border-b bg-background p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary text-primary-foreground rounded-lg">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm">DayFlow Dashboard</h3>
+                    <p className="text-xs text-muted-foreground">Welcome back, Sarah Johnson</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">
+                    ● Online
+                  </div>
+                  <div className="text-xs text-muted-foreground">09:15 AM</div>
+                </div>
+              </div>
+
+              {/* Dashboard Content */}
+              <div className="p-6 bg-gradient-to-br from-background to-muted/30">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  {/* Quick Stats */}
+                  <div className="bg-white rounded-lg p-4 border shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide">Today's Attendance</p>
+                        <p className="text-2xl font-bold text-green-600">94.2%</p>
+                      </div>
+                      <div className="p-2 bg-green-100 rounded-full">
+                        <Users className="w-4 h-4 text-green-600" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg p-4 border shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide">Pending Leaves</p>
+                        <p className="text-2xl font-bold text-orange-600">7</p>
+                      </div>
+                      <div className="p-2 bg-orange-100 rounded-full">
+                        <Calendar className="w-4 h-4 text-orange-600" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg p-4 border shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide">Active Employees</p>
+                        <p className="text-2xl font-bold text-blue-600">142</p>
+                      </div>
+                      <div className="p-2 bg-blue-100 rounded-full">
+                        <Shield className="w-4 h-4 text-blue-600" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Activity */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="bg-white rounded-lg border shadow-sm">
+                    <div className="p-4 border-b">
+                      <h4 className="font-semibold text-sm">Recent Check-ins</h4>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-medium text-blue-700">AP</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">Aayush Prasad</p>
+                          <p className="text-xs text-muted-foreground">Full Stack developer • 09:12 AM</p>
+                        </div>
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      </div>
+                      
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-medium text-purple-700">MD</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">Manav Dhamecha</p>
+                          <p className="text-xs text-muted-foreground">DB Administrator • 09:08 AM</p>
+                        </div>
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      </div>
+                      
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                          <span className="text-xs font-medium text-green-700">AK</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">Arshad Khatib</p>
+                          <p className="text-xs text-muted-foreground">ML Engineer • 09:05 AM</p>
+                        </div>
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg border shadow-sm">
+                    <div className="p-4 border-b">
+                      <h4 className="font-semibold text-sm">Leave Requests</h4>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                            <span className="text-xs font-medium text-orange-700">VJ</span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Vishal Joshi</p>
+                            <p className="text-xs text-muted-foreground">Sick Leave • 2 days</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-1">
+                          <button className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">Approve</button>
+                          <button className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">Reject</button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span className="text-xs font-medium text-blue-700">PS</span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Poorva Shah</p>
+                            <p className="text-xs text-muted-foreground">Vacation • 5 days</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-1">
+                          <button className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">Approve</button>
+                          <button className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">Reject</button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                            <span className="text-xs font-medium text-purple-700">GM</span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Gaurav Mehta</p>
+                            <p className="text-xs text-muted-foreground">Personal • 1 day</p>
+                          </div>
+                        </div>
+                        <div className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">Approved</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="mt-6 flex flex-wrap gap-2">
+                  <button className="px-3 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-medium hover:bg-primary/90 transition-colors">
+                    <Clock className="w-3 h-3 inline mr-1" />
+                    Check In
+                  </button>
+                  <button className="px-3 py-2 bg-white border rounded-lg text-xs font-medium hover:bg-muted/50 transition-colors">
+                    <Calendar className="w-3 h-3 inline mr-1" />
+                    Request Leave
+                  </button>
+                  <button className="px-3 py-2 bg-white border rounded-lg text-xs font-medium hover:bg-muted/50 transition-colors">
+                    <BarChart3 className="w-3 h-3 inline mr-1" />
+                    View Reports
+                  </button>
+                  <button className="px-3 py-2 bg-white border rounded-lg text-xs font-medium hover:bg-muted/50 transition-colors">
+                    <Users className="w-3 h-3 inline mr-1" />
+                    Team Directory
+                  </button>
                 </div>
               </div>
             </div>
@@ -145,7 +315,7 @@ export default function Home() {
                 </Button>
               </Link>
               <p className="text-xs text-muted-foreground">
-                No credit card required. 14-day free trial.
+                No credit card required. Hackathon Prototype
               </p>
             </div>
           </div>
