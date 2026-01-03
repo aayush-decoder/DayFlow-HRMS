@@ -1,18 +1,30 @@
-// app/api/leaves/balance/route.ts
 import { NextRequest, NextResponse } from "next/server";
+<<<<<<< HEAD
+=======
 import { getUserFromRequest } from "@/lib/roleGuard";
+>>>>>>> 200691e8a41196ab4225f69c3d9aab78e237a9b1
 import { prisma } from "@/lib/prisma";
+import { verifyToken } from "@/lib/auth";
 
+<<<<<<< HEAD
+export async function GET(req: NextRequest) {
+  try {
+    const token = req.cookies.get("token")?.value;
+    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const user = verifyToken(token);
+=======
 // GET - Fetch leave balance for current user
 export async function GET(req: NextRequest) {
   try {
     const user = await getUserFromRequest(req);
+>>>>>>> 200691e8a41196ab4225f69c3d9aab78e237a9b1
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const employee = await prisma.employee.findUnique({
-      where: { userId: user.userId },
+      where: { userId: user.id },
       include: {
         leaveBalance: true,
       },

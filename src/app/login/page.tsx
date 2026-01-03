@@ -37,9 +37,7 @@ function LoginPageContent(): ReactElement {
         credentials: "include", // Include cookies in the request
       });
 
-      console.log("Response status:", res.status);
-      console.log("Response ok:", res.ok);
-      
+
       const data: {
         message?: string;
         error?: string;
@@ -47,26 +45,14 @@ function LoginPageContent(): ReactElement {
         user?: any;
       } = await res.json();
 
-      console.log("Response data:", data);
-      console.log("Has token:", !!data.token);
-      console.log("Has user:", !!data.user);
-      console.log("User role:", data.user?.role);
-
-      if (res.ok && data.token && data.user) {
-        console.log("✅ Login successful! Storing data...");
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-
-        // Determine redirect URL: use query param if provided, otherwise use role-based default
-        const finalRedirect = redirectTo || getDefaultRedirect(data.user.role);
-        console.log("🔄 Redirecting to:", finalRedirect);
-        
-        // Show success message briefly before redirect
+      if (res.ok && data.token) {
+        // Token is stored in httpOnly cookie automatically
         setMsg(`✅ ${data.message || "Login successful"}`);
-        
-        // Immediately redirect using window.location
-        console.log("🚀 Executing redirect NOW...");
-        window.location.href = finalRedirect;
+
+        // Redirect after 1 second
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 1000);
       } else {
         console.error("❌ Login failed:", data);
         setMsg(`❌ ${data.error || "Login failed"}`);
@@ -79,9 +65,10 @@ function LoginPageContent(): ReactElement {
   };
 
   const handleChange =
-    (key: keyof LoginForm) => (e: ChangeEvent<HTMLInputElement>) => {
-      setForm({ ...form, [key]: e.target.value });
-    };
+    (key: keyof LoginForm) =>
+      (e: ChangeEvent<HTMLInputElement>) => {
+        setForm({ ...form, [key]: e.target.value });
+      };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
@@ -132,11 +119,10 @@ function LoginPageContent(): ReactElement {
           {/* Message */}
           {msg && (
             <div
-              className={`text-sm text-center p-3 rounded-md ${
-                msg.startsWith("✅")
-                  ? "bg-green-50 text-green-700 border border-green-200"
-                  : "bg-red-50 text-red-700 border border-red-200"
-              }`}
+              className={`text-sm text-center p-3 rounded-md ${msg.startsWith("✅")
+                ? "bg-green-50 text-green-700 border border-green-200"
+                : "bg-red-50 text-red-700 border border-red-200"
+                }`}
             >
               {msg}
             </div>

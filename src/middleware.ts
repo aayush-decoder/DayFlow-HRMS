@@ -4,7 +4,7 @@ import { jwtVerify, type JWTPayload } from "jose";
 const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
 interface JwtUser {
-  userId: string;
+  id: string; // Changed from userId to id
   email: string;
   role: string;
   companyId: string;
@@ -12,7 +12,7 @@ interface JwtUser {
 
 function isJwtUser(payload: JWTPayload): payload is JWTPayload & JwtUser {
   return (
-    typeof payload.userId === "string" &&
+    typeof payload.id === "string" && // Changed from userId to id
     typeof payload.email === "string" &&
     typeof payload.role === "string" &&
     typeof payload.companyId === "string"
@@ -43,7 +43,10 @@ export async function middleware(req: NextRequest) {
 
     console.log("👤 User role:", payload.role);
 
-    if (req.nextUrl.pathname.startsWith("/admin") && payload.role !== "ADMIN") {
+    if (
+      req.nextUrl.pathname.startsWith("/admin") &&
+      payload.role !== "ADMIN"
+    ) {
       console.log("⛔ Non-admin trying to access admin route");
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
