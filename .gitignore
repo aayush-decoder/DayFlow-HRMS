@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+pnpm-lock.yaml
+pnpm-workspace.yaml
 
 # next.js
 /.next/
