@@ -1,40 +1,41 @@
-import jwt from "jsonwebtoken"
+import bcrypt from "bcrypt";
+import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
 
-export function getAuth(request: Request) {
-  // DEV MODE OVERRIDE (TEMPORARY) // testing
-  if (process.env.NODE_ENV !== "production") {
-    const devUser = request.headers.get("x-dev-user")
+const JWT_SECRET = process.env.JWT_SECRET || "change_this";
 
-    if (devUser === "employee") {
-      return {
-        userId: "dev-user-emp",
-        role: "EMPLOYEE",
-        companyId: "dev-company",
-        employeeId: "dev-employee"
-      }
-    }
-
-    if (devUser === "admin") {
-      return {
-        userId: "dev-user-admin",
-        role: "ADMIN",
-        companyId: "dev-company",
-        employeeId: null
-      }
-    }
-  }
-
-  // REAL AUTH (production)
-  const auth = request.headers.get("authorization")
-  if (!auth) throw new Error("Unauthorized")
-
-  const token = auth.replace("Bearer ", "")
-  const payload = jwt.verify(token, process.env.JWT_SECRET!) as any
-
-  return {
-    userId: payload.userId,
-    role: payload.role,
-    companyId: payload.companyId,
-    employeeId: payload.employeeId ?? null
-  }
+export interface AuthPayload {
+  id: string;
+  email: string;
+  role: string;
 }
+
+export const hashPassword = async (
+  plain: string
+): Promise<string> => {
+  const saltRounds = 10;
+  return bcrypt.hash(plain, saltRounds);
+};
+
+export const comparePassword = async (
+  plain: string,
+  hash: string
+): Promise<boolean> => {
+  return bcrypt.compare(plain, hash);
+};
+
+export const generateToken = (
+  payload: AuthPayload,
+  opts: SignOptions = { expiresIn: "7d" }
+): string => {
+  return jwt.sign(payload, JWT_SECRET, opts);
+};
+
+export const verifyToken = (
+  token: string
+): AuthPayload | null => {
+  try {
+    return jwt.verify(token, JWT_SECRET) as AuthPayload;
+  } catch {
+    return null;
+  }
+};
