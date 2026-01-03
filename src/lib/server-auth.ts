@@ -10,13 +10,16 @@ export async function getServerAuth() {
     if (!token) return null
 
     const { payload } = await jwtVerify(token, secret);
-
-    if (!payload.id || !payload.role || !payload.companyId) {
+    
+    // Handle backward compatibility: old tokens use 'id', new ones use 'userId'
+    const userId = (payload.userId || payload.id) as string;
+    
+    if (!userId || !payload.role || !payload.companyId) {
       return null;
     }
 
     return {
-      id: payload.id as string,
+      userId,
       email: payload.email as string,
       role: payload.role as string,
       companyId: payload.companyId as string,

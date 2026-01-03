@@ -9,9 +9,79 @@ import { Badge } from "@/components/ui/badge"
 import { Download } from "lucide-react"
 
 export function AdminAttendance() {
-  const [records, setRecords] = useState<any[]>([])
+  // Hardcoded demo data for today
+  const hardcodedRecords = [
+    {
+      id: "1",
+      checkIn: new Date(new Date().setHours(9, 0, 0)).toISOString(),
+      checkOut: new Date(new Date().setHours(18, 0, 0)).toISOString(),
+      status: "PRESENT",
+      employee: {
+        name: "John Doe",
+        department: "Engineering",
+        designation: "Senior Developer"
+      }
+    },
+    {
+      id: "2",
+      checkIn: new Date(new Date().setHours(8, 30, 0)).toISOString(),
+      checkOut: new Date(new Date().setHours(17, 30, 0)).toISOString(),
+      status: "PRESENT",
+      employee: {
+        name: "Jane Smith",
+        department: "Marketing",
+        designation: "Marketing Manager"
+      }
+    },
+    {
+      id: "3",
+      checkIn: new Date(new Date().setHours(9, 15, 0)).toISOString(),
+      checkOut: null,
+      status: "PRESENT",
+      employee: {
+        name: "Mike Johnson",
+        department: "Engineering",
+        designation: "Junior Developer"
+      }
+    },
+    {
+      id: "4",
+      checkIn: null,
+      checkOut: null,
+      status: "ABSENT",
+      employee: {
+        name: "Sarah Williams",
+        department: "HR",
+        designation: "HR Specialist"
+      }
+    },
+    {
+      id: "5",
+      checkIn: new Date(new Date().setHours(9, 30, 0)).toISOString(),
+      checkOut: new Date(new Date().setHours(18, 15, 0)).toISOString(),
+      status: "PRESENT",
+      employee: {
+        name: "David Brown",
+        department: "Sales",
+        designation: "Sales Executive"
+      }
+    },
+    {
+      id: "6",
+      checkIn: new Date(new Date().setHours(8, 45, 0)).toISOString(),
+      checkOut: new Date(new Date().setHours(17, 45, 0)).toISOString(),
+      status: "PRESENT",
+      employee: {
+        name: "Emily Davis",
+        department: "Engineering",
+        designation: "Tech Lead"
+      }
+    },
+  ]
+
+  const [records, setRecords] = useState<any[]>(hardcodedRecords)
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]) // YYYY-MM-DD
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     fetchAttendance()
@@ -20,13 +90,15 @@ export function AdminAttendance() {
   const fetchAttendance = async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/attendance?date=${date}`)
+      const res = await fetch(`/api/attendance?date=${date}`, { credentials: "include" })
       if (res.ok) {
         const data = await res.json()
-        setRecords(data)
+        if (data && data.length > 0) {
+          setRecords(data)
+        }
       }
     } catch (error) {
-      console.error("Fetch failed", error)
+      console.error("Fetch failed, using demo data", error)
     } finally {
       setLoading(false)
     }

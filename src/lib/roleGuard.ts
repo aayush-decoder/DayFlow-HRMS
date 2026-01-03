@@ -45,6 +45,11 @@ export async function getUserFromRequest(
     const { payload } = await jwtVerify(token, secret);
     console.log("✅ Token verified, payload:", payload);
 
+    // Handle backward compatibility: old tokens use 'id', new ones use 'userId'
+    if (payload.id && !payload.userId) {
+      payload.userId = payload.id;
+    }
+
     if (!isJwtUser(payload)) {
       console.log("❌ Invalid payload structure");
       return null;

@@ -2,14 +2,16 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LayoutDashboard, Calendar, FileText, User, Settings, LogOut, Clock, Banknote } from "lucide-react"
+import { LayoutDashboard, Calendar, FileText, User, Settings, LogOut, Clock, Banknote, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Button } from "@/components/ui/button"
+import { useState } from "react"
 
 export function Sidebar({ role }: { role: string }) {
   const pathname = usePathname()
   const router = useRouter()
+  const [showProfileModal, setShowProfileModal] = useState(false)
 
   const handleLogout = async () => {
     try {
@@ -38,31 +40,23 @@ export function Sidebar({ role }: { role: string }) {
     {
       label: "Time Off",
       icon: Calendar,
-      href: "/dashboard/timeoff",
+      href: role === "ADMIN" ? "/admin/timeoff" : "/dashboard/timeoff",
       color: "text-pink-500",
     },
-    {
+  ]
+
+  // Employee only - add Payroll link
+  if (role !== 'ADMIN') {
+    routes.push({
       label: "Payroll",
       icon: Banknote,
       href: "/dashboard/payroll",
       color: "text-emerald-500",
-    },
-    {
-      label: "My Profile",
-      icon: User,
-      href: "/profile",
-      color: "text-orange-500",
-    },
-  ]
-
-  // Admin only routes
-  if (role === 'ADMIN') {
-    routes.push({
-      label: "Approvals",
-      icon: Settings,
-      href: "/admin/timeoff",
-      color: "text-gray-500",
     })
+  }
+
+  // Admin only - add Manage Payroll
+  if (role === 'ADMIN') {
     routes.push({
       label: "Manage Payroll",
       icon: Banknote,
@@ -113,15 +107,15 @@ export function Sidebar({ role }: { role: string }) {
         {/* User Footer */}
         <div className="p-4 mt-auto">
           <div className="p-3 bg-gradient-to-br from-white/40 to-white/10 dark:from-white/5 dark:to-transparent rounded-2xl border border-white/20 backdrop-blur-md flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <button onClick={() => setShowProfileModal(true)} className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition">
               <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-700">
                 {role[0]}
               </div>
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 text-left">
                 <p className="text-sm font-bold truncate capitalize">{role.toLowerCase()}</p>
                 <p className="text-[10px] text-muted-foreground">Pro Plan</p>
               </div>
-            </div>
+            </button>
             <div className="flex gap-1">
               <ModeToggle />
               <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full" onClick={handleLogout} title="Logout">
@@ -131,6 +125,35 @@ export function Sidebar({ role }: { role: string }) {
           </div>
         </div>
       </div>
+
+      {/* Profile Modal */}
+      {showProfileModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowProfileModal(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 w-80 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Profile</h2>
+              <button onClick={() => setShowProfileModal(false)} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center text-2xl font-bold text-indigo-700">
+                {role[0]}
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-bold capitalize">{role.toLowerCase()}</p>
+                <p className="text-sm text-muted-foreground">Pro Plan</p>
+              </div>
+            </div>
+            <div className="mt-6">
+              <Button variant="outline" className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => { setShowProfileModal(false); handleLogout(); }}>
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

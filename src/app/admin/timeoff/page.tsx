@@ -77,10 +77,10 @@ export default function AdminTimeOffPage() {
 
     try {
       const res = await fetch(`/api/leaves/${id}`, {
-        method: "PUT", // Changed from PATCH to PUT
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // Added for authentication
         body: JSON.stringify({ status }),
+        credentials: "include", // Include cookies
       });
 
       const data = await res.json();
@@ -89,6 +89,7 @@ export default function AdminTimeOffPage() {
         alert(`Leave request ${status.toLowerCase()} successfully!`);
         fetchLeaves();
       } else {
+        console.error("API Error:", data);
         alert(data.error || `Failed to ${status.toLowerCase()} leave request`);
       }
     } catch (error) {
@@ -141,46 +142,46 @@ export default function AdminTimeOffPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Time Off Management</h1>
+    <div className="p-4 max-w-7xl mx-auto">
+      <h1 className="text-2xl font-bold text-gray-900 mb-4">Time Off Management</h1>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-500 mb-1">Total Requests</h3>
-          <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+        <div className="bg-white border border-gray-200 rounded-lg p-3">
+          <h3 className="text-xs font-medium text-gray-500 mb-1">Total Requests</h3>
+          <p className="text-xl font-bold text-gray-900">{stats.total}</p>
         </div>
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-yellow-700 mb-1">Pending</h3>
-          <p className="text-2xl font-bold text-yellow-900">{stats.pending}</p>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+          <h3 className="text-xs font-medium text-yellow-700 mb-1">Pending</h3>
+          <p className="text-xl font-bold text-yellow-900">{stats.pending}</p>
         </div>
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-green-700 mb-1">Approved</h3>
-          <p className="text-2xl font-bold text-green-900">{stats.approved}</p>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+          <h3 className="text-xs font-medium text-green-700 mb-1">Approved</h3>
+          <p className="text-xl font-bold text-green-900">{stats.approved}</p>
         </div>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-red-700 mb-1">Rejected</h3>
-          <p className="text-2xl font-bold text-red-900">{stats.rejected}</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+          <h3 className="text-xs font-medium text-red-700 mb-1">Rejected</h3>
+          <p className="text-xl font-bold text-red-900">{stats.rejected}</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
+      <div className="bg-white border border-gray-200 rounded-lg p-3 mb-4">
+        <div className="flex flex-col md:flex-row gap-3">
           <div className="flex-1">
             <input
               type="text"
               placeholder="Search by employee name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder:text-gray-500"
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder:text-gray-500"
             />
           </div>
           <div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full md:w-48 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+              className="w-full md:w-48 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
             >
               <option value="ALL">All Status</option>
               <option value="PENDING">Pending</option>
@@ -197,7 +198,7 @@ export default function AdminTimeOffPage() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Employee
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -233,16 +234,16 @@ export default function AdminTimeOffPage() {
               ) : (
                 filteredLeaves.map((leave) => (
                   <tr key={leave.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
                         {leave.employee.name}
                       </div>
                       <div className="text-sm text-gray-500">{leave.employee.designation}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                       {leave.employee.department}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <span
                         className={`px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(
                           leave.type
@@ -260,12 +261,12 @@ export default function AdminTimeOffPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {leave.daysCount}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
+                    <td className="px-4 py-3 text-sm text-gray-900 max-w-xs">
                       <div className="truncate" title={leave.reason || "-"}>
                         {leave.reason || "-"}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <span
                         className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
                           leave.status
@@ -274,20 +275,20 @@ export default function AdminTimeOffPage() {
                         {leave.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm">
                       {leave.status === "PENDING" && (
-                        <div className="flex gap-2">
+                        <div className="flex gap-1">
                           <button
                             onClick={() => handleApproveReject(leave.id, "APPROVED")}
                             disabled={processingId === leave.id}
-                            className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition disabled:bg-green-300"
+                            className="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition disabled:bg-green-300"
                           >
                             Approve
                           </button>
                           <button
                             onClick={() => handleApproveReject(leave.id, "REJECTED")}
                             disabled={processingId === leave.id}
-                            className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:bg-red-300"
+                            className="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700 transition disabled:bg-red-300"
                           >
                             Reject
                           </button>

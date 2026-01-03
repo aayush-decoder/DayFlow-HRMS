@@ -20,6 +20,38 @@ export function EmployeeHome() {
   const [attendance, setAttendance] = useState<any>(null)
   const [records, setRecords] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [elapsedTime, setElapsedTime] = useState("00:00:00")
+
+  // Timer effect - updates every second when checked in
+  useEffect(() => {
+    if (!attendance) return
+    
+    const isCurrentlyCheckedIn = attendance.checkIn && !attendance.checkOut
+    
+    if (isCurrentlyCheckedIn) {
+      // Update immediately
+      const updateTimer = () => {
+        const checkInTime = new Date(attendance.checkIn).getTime()
+        const now = Date.now()
+        const diff = now - checkInTime
+        
+        const hours = Math.floor(diff / (1000 * 60 * 60))
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+        
+        setElapsedTime(
+          `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+        )
+      }
+      
+      updateTimer() // Call immediately
+      const timer = setInterval(updateTimer, 1000)
+      
+      return () => clearInterval(timer)
+    } else {
+      setElapsedTime("00:00:00")
+    }
+  }, [attendance])
 
   // Fetch Logic
   useEffect(() => {
@@ -120,14 +152,27 @@ export function EmployeeHome() {
             </div>
 
             <div className="py-8 text-center">
-              <div className="text-5xl font-mono font-bold tracking-tighter">
-                {attendance?.checkIn
-                  ? new Date(attendance.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                  : "--:--"}
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                {isCheckedIn ? "Working since morning" : "Ready to start?"}
-              </p>
+              {isCheckedIn ? (
+                <>
+                  <div className="text-5xl font-mono font-bold tracking-tighter text-green-500">
+                    {elapsedTime}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Working since {new Date(attendance.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="text-5xl font-mono font-bold tracking-tighter">
+                    {attendance?.checkIn
+                      ? new Date(attendance.checkIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      : "--:--"}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {isCheckedOut ? "Day completed" : "Ready to start?"}
+                  </p>
+                </>
+              )}
             </div>
 
             <div className="grid gap-3">

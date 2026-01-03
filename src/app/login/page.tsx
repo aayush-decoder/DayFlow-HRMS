@@ -73,7 +73,7 @@ function LoginPageContent(): ReactElement {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-3xl font-bold mb-2 text-center">Login</h1>
+        <h1 className="text-3xl font-bold mb-2 text-center text-gray-900">Login</h1>
         <p className="text-gray-600 text-center mb-6">Welcome back!</p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
