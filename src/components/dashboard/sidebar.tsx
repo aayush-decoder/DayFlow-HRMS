@@ -54,9 +54,11 @@ export function Sidebar({ role }: { role: string }) {
         </Link>
       )}
 
-      <Button variant="ghost" className="w-full justify-start" disabled>
-        Leave Management
-      </Button>
+      <Link href={role === "ADMIN" ? "/admin/timeoff" : "/dashboard/timeoff"}>
+        <Button variant="ghost" className="w-full justify-start">
+          Leave Management
+        </Button>
+      </Link>
 
       <div className="pt-4 border-t">
         <Button 
