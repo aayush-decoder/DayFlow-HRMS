@@ -47,16 +47,33 @@ export function Sidebar({ role }: { role: string }) {
       </Link>
 
       {role === "ADMIN" && (
-        <Link href="/dashboard/report">
+        <>
+          <Link href="/dashboard/report">
+            <Button variant="ghost" className="w-full justify-start">
+              Reports
+            </Button>
+          </Link>
+          <Link href="/admin/timeoff">
+            <Button variant="ghost" className="w-full justify-start">
+              Leave Management
+            </Button>
+          </Link>
+        </>
+      )}
+
+      {role === "EMPLOYEE" && (
+        <Link href="/dashboard/timeoff">
           <Button variant="ghost" className="w-full justify-start">
-            Reports
+            My Leaves
           </Button>
         </Link>
       )}
 
-      <Button variant="ghost" className="w-full justify-start" disabled>
-        Leave Management
-      </Button>
+      {role !== "ADMIN" && role !== "EMPLOYEE" && (
+        <Button variant="ghost" className="w-full justify-start" disabled>
+          Leave Management
+        </Button>
+      )}
 
       <div className="pt-4 border-t">
         <Button 

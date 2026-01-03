@@ -40,7 +40,9 @@ export default function AdminTimeOffPage() {
 
   const fetchLeaves = async () => {
     try {
-      const res = await fetch("/api/leaves");
+      const res = await fetch("/api/leaves", {
+        credentials: "include" // Added for authentication
+      });
       const data = await res.json();
       if (res.ok) {
         setLeaves(data.leaves);
@@ -75,8 +77,9 @@ export default function AdminTimeOffPage() {
 
     try {
       const res = await fetch(`/api/leaves/${id}`, {
-        method: "PATCH",
+        method: "PUT", // Changed from PATCH to PUT
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // Added for authentication
         body: JSON.stringify({ status }),
       });
 
