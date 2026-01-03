@@ -33,15 +33,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get employee info
-    const employee = await prisma.employee.findUnique({
-      where: { userId: user.userId },
-    });
-
-    if (!employee) {
-      return NextResponse.json({ error: "Employee not found" }, { status: 404 });
-    }
-
     let leaves;
 
     // If ADMIN, fetch all leaves for the company
@@ -68,6 +59,14 @@ export async function GET(req: NextRequest) {
       });
     } else {
       // If EMPLOYEE, fetch only their leaves
+      const employee = await prisma.employee.findUnique({
+        where: { userId: user.userId },
+      });
+
+      if (!employee) {
+        return NextResponse.json({ error: "Employee not found" }, { status: 404 });
+      }
+
       leaves = await prisma.leave.findMany({
         where: {
           employeeId: employee.id,
