@@ -41,15 +41,11 @@ export async function middleware(req: NextRequest) {
 
     console.log("👤 User role:", payload.role);
 
-<<<<<<< HEAD
     if (
       req.nextUrl.pathname.startsWith("/admin") &&
       payload.role !== "ADMIN"
     ) {
-=======
-    if (req.nextUrl.pathname.startsWith("/admin") && payload.role !== "ADMIN") {
       console.log("⛔ Non-admin trying to access admin route");
->>>>>>> origin/main
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
 
