@@ -63,10 +63,11 @@ export async function POST(req: NextRequest) {
 
     // Generate JWT token
     const token = await new SignJWT({
-      userId: user.id,
+      id: user.id,
       email: user.email,
       role: user.role,
       companyId: user.companyId,
+      employeeId: user.employee?.id || undefined,
     })
       .setProtectedHeader({ alg: "HS256" })
       .setExpirationTime("7d")

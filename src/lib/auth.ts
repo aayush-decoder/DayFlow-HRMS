@@ -1,21 +1,15 @@
 import bcrypt from "bcrypt";
-import { jwtVerify } from "jose";
-import { prisma } from "@/lib/prisma";
+import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
+import { cookies } from "next/headers";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+const JWT_SECRET = process.env.JWT_SECRET || "change_this";
 
 export interface AuthPayload {
   id: string;
   email: string;
   role: string;
-}
-
-// Legacy interface for backward compatibility with attendance APIs
-export interface LegacyAuthPayload {
-  userId: string;
-  role: string;
-  companyId: string;
-  employeeId: string | null;
+  employeeId?: string;
+  companyId?: string;
 }
 
 export const hashPassword = async (
@@ -32,60 +26,49 @@ export const comparePassword = async (
   return bcrypt.compare(plain, hash);
 };
 
-// Updated getAuth function to work with the new jose-based authentication
-export async function getAuth(req: Request): Promise<LegacyAuthPayload> {
-  // Try to get token from Authorization header first (for API clients)
-  const authHeader = req.headers.get("authorization");
-  let token: string | undefined;
-  
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    token = authHeader.substring(7); // Remove "Bearer " prefix
-  } else {
-    // Try to get token from cookie (for web app)
-    const cookieHeader = req.headers.get("cookie");
-    if (cookieHeader) {
-      const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
-        const [key, value] = cookie.trim().split('=');
-        acc[key] = value;
-        return acc;
-      }, {} as Record<string, string>);
-      token = cookies.token;
-    }
+export const generateToken = (
+  payload: AuthPayload,
+  opts: SignOptions = { expiresIn: "7d" }
+): string => {
+  return jwt.sign(payload, JWT_SECRET, opts);
+};
+
+export const verifyToken = (
+  token: string
+): AuthPayload | null => {
+  try {
+    return jwt.verify(token, JWT_SECRET) as AuthPayload;
+  } catch {
+    return null;
   }
+};
+
+export function getAuth(req: Request): AuthPayload {
+  // Extract token from cookie header
+  const cookieHeader = req.headers.get('cookie');
+
+  if (!cookieHeader) {
+    throw new Error("Unauthorized: No cookies found");
+  }
+
+  // Parse cookies manually
+  const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+    const [key, value] = cookie.trim().split('=');
+    acc[key] = value;
+    return acc;
+  }, {} as Record<string, string>);
+
+  const token = cookies['token'];
 
   if (!token) {
-    throw new Error("Unauthorized");
+    throw new Error("Unauthorized: No token found");
   }
 
-  try {
-    const { payload } = await jwtVerify(token, secret);
-    
-    if (!payload.userId || !payload.role || !payload.companyId) {
-      throw new Error("Invalid token payload");
-    }
+  const payload = verifyToken(token);
 
-    // For employees, we need to get their employee ID from the database
-    let employeeId: string | null = null;
-    if (payload.role === "EMPLOYEE") {
-      const employee = await prisma.employee.findUnique({
-        where: { userId: payload.userId as string },
-        select: { id: true }
-      });
-      employeeId = employee?.id || null;
-      
-      if (!employeeId) {
-        throw new Error("Employee record not found. Please contact your administrator.");
-      }
-    }
-
-    return {
-      userId: payload.userId as string,
-      role: payload.role as string,
-      companyId: payload.companyId as string,
-      employeeId
-    };
-  } catch (error) {
-    console.error("Token verification failed:", error);
-    throw new Error("Unauthorized");
+  if (!payload) {
+    throw new Error("Unauthorized: Invalid token");
   }
+
+  return payload;
 }
