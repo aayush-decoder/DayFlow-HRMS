@@ -1,15 +1,21 @@
 "use client";
 
-import { useState, FormEvent, ChangeEvent, ReactElement } from "react";
-import { useRouter } from "next/navigation";
+import { useState, FormEvent, ChangeEvent, ReactElement, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface LoginForm {
   email: string;
   password: string;
 }
 
-export default function LoginPage(): ReactElement {
+function LoginPageContent(): ReactElement {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const getDefaultRedirect = (role: string): string => {
+    return role === "ADMIN" ? "/admin/timeoff" : "/dashboard/timeoff";
+  };
+  const redirectTo = searchParams.get("redirect");
+
   const [form, setForm] = useState<LoginForm>({
     email: "",
     password: "",
@@ -24,31 +30,45 @@ export default function LoginPage(): ReactElement {
     setMsg("");
 
     try {
-      const res = await fetch("http://localhost:3000/api/auth/login", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
+        credentials: "include", // Include cookies in the request
       });
 
-      const data: { 
-        message?: string; 
-        error?: string; 
+      console.log("Response status:", res.status);
+      console.log("Response ok:", res.ok);
+      
+      const data: {
+        message?: string;
+        error?: string;
         token?: string;
         user?: any;
       } = await res.json();
 
-      if (res.ok && data.token) {
-        // Store token in localStorage
+      console.log("Response data:", data);
+      console.log("Has token:", !!data.token);
+      console.log("Has user:", !!data.user);
+      console.log("User role:", data.user?.role);
+
+      if (res.ok && data.token && data.user) {
+        console.log("✅ Login successful! Storing data...");
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
+
+        // Determine redirect URL: use query param if provided, otherwise use role-based default
+        const finalRedirect = redirectTo || getDefaultRedirect(data.user.role);
+        console.log("🔄 Redirecting to:", finalRedirect);
         
+        // Show success message briefly before redirect
         setMsg(`✅ ${data.message || "Login successful"}`);
         
-        // Redirect after 1 second
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 1000);
+        // Immediately redirect using window.location
+        console.log("🚀 Executing redirect NOW...");
+        window.location.href = finalRedirect;
       } else {
+        console.error("❌ Login failed:", data);
         setMsg(`❌ ${data.error || "Login failed"}`);
       }
     } catch (error) {
@@ -59,8 +79,7 @@ export default function LoginPage(): ReactElement {
   };
 
   const handleChange =
-    (key: keyof LoginForm) =>
-    (e: ChangeEvent<HTMLInputElement>) => {
+    (key: keyof LoginForm) => (e: ChangeEvent<HTMLInputElement>) => {
       setForm({ ...form, [key]: e.target.value });
     };
 
@@ -143,12 +162,23 @@ export default function LoginPage(): ReactElement {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Don't have an account?{" "}
-            <a href="/register" className="text-blue-600 hover:underline font-medium">
+            <a
+              href="/register"
+              className="text-blue-600 hover:underline font-medium"
+            >
               Register here
             </a>
           </p>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage(): ReactElement {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+      <LoginPageContent />
+    </Suspense>
   );
 }
