@@ -1,33 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
-import {prisma} from "@/lib/prisma";
-import { JwtPayload } from "@/types/auth";
+import { getUserFromRequest } from "@/lib/roleGuard";
+import { prisma } from "@/lib/prisma";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
-
-export async function PATCH(
+export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const token = req.cookies.get("token")?.value;
-    if (!token) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const user = await getUserFromRequest(req);
+    
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { payload } = await jwtVerify(token, secret);
-    const user = payload as unknown as JwtPayload;
-
     if (user.role !== "ADMIN") {
-      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const { status } = await req.json(); // APPROVED | REJECTED
 
     if (!["APPROVED", "REJECTED"].includes(status)) {
       return NextResponse.json(
-        { message: "Invalid status" },
+        { error: "Invalid status" },
         { status: 400 }
       );
     }
@@ -38,14 +33,14 @@ export async function PATCH(
 
     if (!leave) {
       return NextResponse.json(
-        { message: "Leave not found" },
+        { error: "Leave not found" },
         { status: 404 }
       );
     }
 
     if (leave.status !== "PENDING") {
       return NextResponse.json(
-        { message: "Leave already processed" },
+        { error: "Leave already processed" },
         { status: 400 }
       );
     }
@@ -53,13 +48,26 @@ export async function PATCH(
     const updatedLeave = await prisma.leave.update({
       where: { id },
       data: { status },
+      include: {
+        employee: {
+          select: {
+            id: true,
+            name: true,
+            department: true,
+            designation: true,
+          },
+        },
+      },
     });
 
-    return NextResponse.json(updatedLeave);
+    return NextResponse.json({ 
+      message: "Leave status updated successfully", 
+      leave: updatedLeave 
+    });
   } catch (error) {
-    console.error(error);
+    console.error("Update leave error:", error);
     return NextResponse.json(
-      { message: "Internal server error" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -71,36 +79,38 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const token = req.cookies.get("token")?.value;
-    if (!token) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const user = await getUserFromRequest(req);
+    
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const { payload } = await jwtVerify(token, secret);
-    const user = payload as unknown as JwtPayload;
 
     const leave = await prisma.leave.findUnique({
       where: { id },
-      include: { employee: true },
+      include: {
+        employee: {
+          select: { userId: true }
+        }
+      }
     });
 
     if (!leave) {
       return NextResponse.json(
-        { message: "Leave not found" },
+        { error: "Leave not found" },
         { status: 404 }
       );
     }
 
     if (leave.status !== "PENDING") {
       return NextResponse.json(
-        { message: "Only pending leaves can be deleted" },
+        { error: "Only pending leaves can be deleted" },
         { status: 400 }
       );
     }
 
     // Only owner or admin can delete
     if (user.role !== "ADMIN" && leave.employee.userId !== user.userId) {
-      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     await prisma.leave.delete({
@@ -109,9 +119,9 @@ export async function DELETE(
 
     return NextResponse.json({ message: "Leave deleted successfully" });
   } catch (error) {
-    console.error(error);
+    console.error("Delete leave error:", error);
     return NextResponse.json(
-      { message: "Internal server error" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

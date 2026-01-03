@@ -3,7 +3,7 @@ import { getAuth } from "@/lib/auth"
 
 export async function GET(req: Request) {
   try {
-    const auth = getAuth(req)
+    const auth = await getAuth(req)
     if (auth.role !== "EMPLOYEE") {
       return Response.json({ error: "Forbidden" }, { status: 403 })
     }

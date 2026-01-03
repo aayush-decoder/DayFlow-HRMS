@@ -4,7 +4,7 @@ import { getTodayDate } from "@/lib/date"
 
 export async function POST(req: Request) {
   try {
-    const auth = getAuth(req)
+    const auth = await getAuth(req)
     if (auth.role !== "EMPLOYEE") {
       return Response.json({ error: "Forbidden" }, { status: 403 })
     }

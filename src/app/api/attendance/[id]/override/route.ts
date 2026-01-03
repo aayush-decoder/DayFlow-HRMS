@@ -6,7 +6,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = getAuth(req)
+    const auth = await getAuth(req)
     console.log('Auth object:', auth)
 
     if (auth.role !== "ADMIN") {

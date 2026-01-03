@@ -12,14 +12,6 @@ export interface AuthPayload {
   companyId?: string;
 }
 
-// Legacy interface for backward compatibility with attendance APIs
-export interface LegacyAuthPayload {
-  userId: string;
-  role: string;
-  companyId: string;
-  employeeId: string | null;
-}
-
 export const hashPassword = async (
   plain: string
 ): Promise<string> => {

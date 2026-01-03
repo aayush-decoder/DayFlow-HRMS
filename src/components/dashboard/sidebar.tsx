@@ -1,13 +1,26 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { LayoutDashboard, Calendar, FileText, User, Settings, LogOut, Clock, PieChart, Banknote } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
+import { LayoutDashboard, Calendar, FileText, User, Settings, LogOut, Clock, Banknote } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ModeToggle } from "@/components/mode-toggle"
+import { Button } from "@/components/ui/button"
 
 export function Sidebar({ role }: { role: string }) {
   const pathname = usePathname()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+      localStorage.clear()
+      router.push('/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+      router.push('/login')
+    }
+  }
 
   const routes = [
     {
@@ -109,7 +122,12 @@ export function Sidebar({ role }: { role: string }) {
                 <p className="text-[10px] text-muted-foreground">Pro Plan</p>
               </div>
             </div>
-            <ModeToggle />
+            <div className="flex gap-1">
+              <ModeToggle />
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full" onClick={handleLogout} title="Logout">
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>
