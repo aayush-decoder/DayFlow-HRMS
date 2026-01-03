@@ -1,8 +1,9 @@
 import { cookies } from "next/headers"
 import { verifyToken } from "@/lib/auth"
 
-export function getServerAuth() {
-  const token = cookies().get("token")?.value
+export async function getServerAuth() {
+  const cookieStore = await cookies()
+  const token = cookieStore.get("token")?.value
   if (!token) return null
   return verifyToken(token)
 }
