@@ -1,0 +1,243 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+//////////////////////////////////////////////////////
+// ENUMS
+//////////////////////////////////////////////////////
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum AttendanceStatus {
+  PRESENT
+  HALF_DAY
+  ABSENT
+  LEAVE
+}
+
+enum LeaveType {
+  PAID
+  SICK
+  UNPAID
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum LeaveDuration {
+  FULL_DAY
+  HALF_DAY
+}
+
+//////////////////////////////////////////////////////
+// COMPANY (MULTI-TENANT BASE)
+//////////////////////////////////////////////////////
+
+model Company {
+  id        String @id @default(uuid())
+  name      String
+
+  timezone  String   // e.g. "Asia/Kolkata"
+
+  fiscalYearStartMonth Int @default(1)
+  fiscalYearStartDay   Int @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users       User[]
+  employees   Employee[]
+  payrollRuns PayrollRun[]
+  auditLogs   AuditLog[]
+}
+
+//////////////////////////////////////////////////////
+// USER & EMPLOYEE
+//////////////////////////////////////////////////////
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  employee  Employee?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Employee {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  companyId    String
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  name         String
+  department   String
+  designation  String
+  phone        String?
+  address      String?
+  joinDate     DateTime
+
+  salary       Salary?
+  leaveBalance LeaveBalance?
+  attendance   Attendance[]
+  leaves       Leave[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// ATTENDANCE
+//////////////////////////////////////////////////////
+
+model Attendance {
+  id           String   @id @default(uuid())
+  employeeId   String
+  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  date         DateTime
+  checkIn      DateTime?
+  checkOut     DateTime?
+
+  status       AttendanceStatus
+  statusReason String?    // "Late arrival", "Admin override"
+
+  isOverridden Boolean @default(false)
+  overriddenBy String?    // admin userId
+  overriddenAt DateTime?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([employeeId, date])
+}
+
+//////////////////////////////////////////////////////
+// LEAVE MANAGEMENT
+//////////////////////////////////////////////////////
+
+model Leave {
+  id          String   @id @default(uuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  type        LeaveType
+  duration    LeaveDuration   // FULL_DAY or HALF_DAY
+
+  fromDate    DateTime
+  toDate      DateTime
+
+  daysCount   Float           // 1.0 or 0.5 (after excluding weekends)
+
+  reason      String?
+  status      LeaveStatus
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// LEAVE BALANCE (NO CARRY FORWARD)
+//////////////////////////////////////////////////////
+
+model LeaveBalance {
+  id          String @id @default(uuid())
+  employeeId  String @unique
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  paidLeave   Float
+  sickLeave   Float
+
+  year        Int
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// SALARY & PAYROLL
+//////////////////////////////////////////////////////
+
+model Salary {
+  id                      String   @id @default(uuid())
+  employeeId              String   @unique
+  employee                Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  monthlyWage             Int
+  yearlyWage              Int
+
+  basicPercent            Float
+  hraPercent              Float
+  performanceBonusPercent Float
+
+  standardAllowance       Int
+  fixedAllowance          Int
+
+  pfEmployeePercent       Float
+  pfEmployerPercent       Float
+  professionalTax         Int
+
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// PAYROLL RUN (OPTIONAL BUT FUTURE-SAFE)
+//////////////////////////////////////////////////////
+
+model PayrollRun {
+  id         String @id @default(uuid())
+
+  companyId  String
+  company    Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  month      Int
+  year       Int
+
+  processedAt DateTime @default(now())
+}
+
+//////////////////////////////////////////////////////
+// AUDIT LOG (MANDATORY FOR YOUR REQUIREMENTS)
+//////////////////////////////////////////////////////
+
+model AuditLog {
+  id         String @id @default(uuid())
+
+  companyId  String
+  company    Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  actorId    String     // admin/hr userId
+  actorRole  Role
+
+  action     String     // e.g. "LEAVE_APPROVED", "SALARY_UPDATED"
+  entityType String     // "Leave", "Salary", "Employee"
+  entityId   String
+
+  before     Json?
+  after      Json?
+
+  batchId    String?    // for mass salary updates
+
+  createdAt  DateTime @default(now())
+}
