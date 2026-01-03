@@ -4,14 +4,14 @@ import { jwtVerify, type JWTPayload } from "jose";
 const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
 interface JwtUser {
-  userId: string;
+  id: string; // Changed from userId to id
   email: string;
   role: string;
 }
 
 function isJwtUser(payload: JWTPayload): payload is JWTPayload & JwtUser {
   return (
-    typeof payload.userId === "string" &&
+    typeof payload.id === "string" && // Changed from userId to id
     typeof payload.email === "string" &&
     typeof payload.role === "string"
   );

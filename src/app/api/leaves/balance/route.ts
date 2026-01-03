@@ -1,39 +1,19 @@
-// app/api/leaves/balance/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
 import { prisma } from "@/lib/prisma";
+import { verifyToken } from "@/lib/auth";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-
-interface JwtPayload {
-  userId: string;
-  email: string;
-  role: string;
-  companyId: string;
-}
-
-async function getUserFromToken(req: NextRequest) {
-  const token = req.cookies.get("token")?.value;
-  if (!token) return null;
-
-  try {
-    const { payload } = await jwtVerify(token, secret);
-    return payload as unknown as JwtPayload;
-  } catch {
-    return null;
-  }
-}
-
-// GET - Fetch leave balance for current user
 export async function GET(req: NextRequest) {
   try {
-    const user = await getUserFromToken(req);
+    const token = req.cookies.get("token")?.value;
+    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const user = verifyToken(token);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const employee = await prisma.employee.findUnique({
-      where: { userId: user.userId },
+      where: { userId: user.id },
       include: {
         leaveBalance: true,
       },

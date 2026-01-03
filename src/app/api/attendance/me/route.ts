@@ -13,10 +13,14 @@ export async function GET(req: Request) {
     }
 
     const { searchParams } = new URL(req.url)
-    const month = Number(searchParams.get("month"))
-    const year = Number(searchParams.get("year"))
+    const now = new Date()
+
+    // Default to current month/year if not provided
+    const month = Number(searchParams.get("month")) || (now.getMonth() + 1)
+    const year = Number(searchParams.get("year")) || now.getFullYear()
 
     if (!month || !year) {
+      // Should not be reached with defaults, but keeping safe
       return Response.json(
         { error: "month and year required" },
         { status: 400 }
@@ -62,11 +66,11 @@ export async function GET(req: Request) {
     })
   } catch (error) {
     console.error("Get attendance error:", error)
-    
+
     if (error instanceof Error && error.message.includes("Unauthorized")) {
       return Response.json({ error: "Unauthorized" }, { status: 401 })
     }
-    
+
     return Response.json(
       { error: "Internal server error" },
       { status: 500 }
