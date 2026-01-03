@@ -5,7 +5,7 @@ import type { NextRequest } from "next/server";
 const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export interface JwtUser {
-  userId: string;
+  id: string;
   email: string;
   role: string;
   companyId: string;
@@ -13,7 +13,7 @@ export interface JwtUser {
 
 function isJwtUser(payload: JWTPayload): payload is JWTPayload & JwtUser {
   return (
-    typeof payload.userId === "string" &&
+    typeof payload.id === "string" &&
     typeof payload.email === "string" &&
     typeof payload.role === "string" &&
     typeof payload.companyId === "string"
@@ -44,11 +44,6 @@ export async function getUserFromRequest(
 
     const { payload } = await jwtVerify(token, secret);
     console.log("✅ Token verified, payload:", payload);
-
-    // Handle backward compatibility: old tokens use 'id', new ones use 'userId'
-    if (payload.id && !payload.userId) {
-      payload.userId = payload.id;
-    }
 
     if (!isJwtUser(payload)) {
       console.log("❌ Invalid payload structure");

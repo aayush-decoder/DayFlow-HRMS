@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     } else {
       // If EMPLOYEE, fetch only their leaves
       const employee = await prisma.employee.findUnique({
-        where: { userId: user.userId },
+        where: { userId: user.id },
       });
 
       if (!employee) {
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
 
     // Get employee
     const employee = await prisma.employee.findUnique({
-      where: { userId: user.userId },
+      where: { userId: user.id },
       include: { leaveBalance: true },
     });
 

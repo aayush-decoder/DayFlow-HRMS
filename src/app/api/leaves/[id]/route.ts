@@ -109,7 +109,7 @@ export async function DELETE(
     }
 
     // Only owner or admin can delete
-    if (user.role !== "ADMIN" && leave.employee.userId !== user.userId) {
+    if (user.role !== "ADMIN" && leave.employee.userId !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
