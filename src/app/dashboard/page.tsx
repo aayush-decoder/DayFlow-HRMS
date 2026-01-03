@@ -3,7 +3,7 @@ import { EmployeeHome } from "@/components/dashboard/employee-home"
 import { AdminHome } from "@/components/dashboard/admin-home"
 
 export default async function DashboardPage() {
-  const auth = await getServerAuth()
+    const auth = await getServerAuth()
 
     if (auth?.role === "ADMIN") {
         return <AdminHome />

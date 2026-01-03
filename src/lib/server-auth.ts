@@ -1,22 +1,22 @@
 import { cookies } from "next/headers"
 import { jwtVerify } from "jose"
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+const secret = new TextEncoder().encode(process.env.JWT_SECRET || "change_this");
 
 export async function getServerAuth() {
   try {
     const cookieStore = await cookies()
     const token = cookieStore.get("token")?.value
     if (!token) return null
-    
+
     const { payload } = await jwtVerify(token, secret);
-    
-    if (!payload.userId || !payload.role || !payload.companyId) {
+
+    if (!payload.id || !payload.role || !payload.companyId) {
       return null;
     }
 
     return {
-      userId: payload.userId as string,
+      id: payload.id as string,
       email: payload.email as string,
       role: payload.role as string,
       companyId: payload.companyId as string,

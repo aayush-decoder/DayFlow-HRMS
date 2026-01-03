@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify, type JWTPayload } from "jose";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+const secret = new TextEncoder().encode(process.env.JWT_SECRET || "change_this");
 
 interface JwtUser {
   id: string; // Changed from userId to id
@@ -11,12 +11,21 @@ interface JwtUser {
 }
 
 function isJwtUser(payload: JWTPayload): payload is JWTPayload & JwtUser {
-  return (
-    typeof payload.id === "string" && // Changed from userId to id
+  const valid = (
+    typeof payload.id === "string" &&
     typeof payload.email === "string" &&
     typeof payload.role === "string" &&
     typeof payload.companyId === "string"
   );
+  if (!valid) {
+    console.log("Missing fields detail:", {
+      hasId: typeof payload.id === "string",
+      hasEmail: typeof payload.email === "string",
+      hasRole: typeof payload.role === "string",
+      hasCompanyId: typeof payload.companyId === "string"
+    })
+  }
+  return valid;
 }
 
 export async function middleware(req: NextRequest) {

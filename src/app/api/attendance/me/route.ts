@@ -18,17 +18,16 @@ export async function GET(req: Request) {
     // Default to current month/year if not provided
     const month = Number(searchParams.get("month")) || (now.getMonth() + 1)
     const year = Number(searchParams.get("year")) || now.getFullYear()
+    const isYearly = searchParams.get("range") === "year"
 
-    if (!month || !year) {
-      // Should not be reached with defaults, but keeping safe
-      return Response.json(
-        { error: "month and year required" },
-        { status: 400 }
-      )
+    let start, end
+    if (isYearly) {
+      start = new Date(year, 0, 1) // Jan 1st
+      end = new Date(year, 11, 31) // Dec 31st
+    } else {
+      start = new Date(year, month - 1, 1)
+      end = new Date(year, month, 0)
     }
-
-    const start = new Date(year, month - 1, 1)
-    const end = new Date(year, month, 0)
 
     const records = await prisma.attendance.findMany({
       where: {

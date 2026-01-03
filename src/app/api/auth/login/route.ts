@@ -1,10 +1,9 @@
-// app/api/login/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt";
-import { SignJWT } from "jose";
 import { prisma } from "@/lib/prisma";
+import { generateToken } from "@/lib/auth";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+const secret = process.env.JWT_SECRET || "change_this";
 
 interface LoginBody {
   email: string;
@@ -61,17 +60,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate JWT token
-    const token = await new SignJWT({
+    // Generate JWT token using centralized logic
+    const token = generateToken({
       id: user.id,
       email: user.email,
       role: user.role,
       companyId: user.companyId,
       employeeId: user.employee?.id || undefined,
-    })
-      .setProtectedHeader({ alg: "HS256" })
-      .setExpirationTime("7d")
-      .sign(secret);
+    });
 
     // Return token in response body AND set as cookie
     const res = NextResponse.json(
