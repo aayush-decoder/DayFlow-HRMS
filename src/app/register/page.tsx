@@ -77,7 +77,7 @@ export default function RegisterPage(): ReactElement {
               value={form.email}
               onChange={handleChange("email")}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-500"
             />
           </div>
 
@@ -93,7 +93,7 @@ export default function RegisterPage(): ReactElement {
               onChange={handleChange("password")}
               required
               minLength={6}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-500"
             />
             <p className="text-xs text-gray-500 mt-1">
               Minimum 6 characters
@@ -109,7 +109,7 @@ export default function RegisterPage(): ReactElement {
               value={form.role}
               onChange={handleChange("role")}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
             >
               <option value="EMPLOYEE">Employee</option>
               <option value="ADMIN">Admin</option>
@@ -127,7 +127,7 @@ export default function RegisterPage(): ReactElement {
               value={form.companyId}
               onChange={handleChange("companyId")}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm text-gray-900 placeholder:text-gray-500"
             />
             <p className="text-xs text-gray-500 mt-1">
               Default: DayFlow Technologies
