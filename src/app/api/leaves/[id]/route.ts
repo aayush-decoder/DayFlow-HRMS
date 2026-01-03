@@ -11,7 +11,7 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const token = req.headers.get("authorization")?.split(" ")[1];
+    const token = req.cookies.get("token")?.value;
     if (!token) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -71,7 +71,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const token = req.headers.get("authorization")?.split(" ")[1];
+    const token = req.cookies.get("token")?.value;
     if (!token) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -81,6 +81,7 @@ export async function DELETE(
 
     const leave = await prisma.leave.findUnique({
       where: { id },
+      include: { employee: true },
     });
 
     if (!leave) {
@@ -98,7 +99,7 @@ export async function DELETE(
     }
 
     // Only owner or admin can delete
-    if (user.role !== "ADMIN" && leave.id !== user.userId) {
+    if (user.role !== "ADMIN" && leave.employee.userId !== user.userId) {
       return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
 
