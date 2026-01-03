@@ -26,7 +26,7 @@ async function main() {
 
   // 2. Create Admin User
   const hashedPasswordAdmin = await bcrypt.hash('Admin@123', 10);
-  
+
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@dayflow.com' },
     update: {},
@@ -40,9 +40,26 @@ async function main() {
 
   console.log('\n✅ Admin user created:', adminUser.email);
 
+  // 2.1 Create Admin Profile
+  await prisma.employee.upsert({
+    where: { userId: adminUser.id },
+    update: {},
+    create: {
+      userId: adminUser.id,
+      companyId: company.id,
+      name: 'Admin User',
+      department: 'Management',
+      designation: 'System Administrator',
+      phone: '+91-ADMIN-0000',
+      address: 'HQ',
+      joinDate: new Date('2023-01-01'),
+    },
+  });
+
+
   // 3. Create Sample Employee User & Profile
   const hashedPasswordEmp = await bcrypt.hash('Employee@123', 10);
-  
+
   const employeeUser = await prisma.user.upsert({
     where: { email: 'employee@dayflow.com' },
     update: {},

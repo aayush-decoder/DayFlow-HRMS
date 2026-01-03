@@ -24,26 +24,23 @@ export default function LoginPage(): ReactElement {
     setMsg("");
 
     try {
-      const res = await fetch("http://localhost:3000/api/auth/login", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
 
-      const data: { 
-        message?: string; 
-        error?: string; 
+      const data: {
+        message?: string;
+        error?: string;
         token?: string;
         user?: any;
       } = await res.json();
 
       if (res.ok && data.token) {
-        // Store token in localStorage
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        
+        // Token is stored in httpOnly cookie automatically
         setMsg(`✅ ${data.message || "Login successful"}`);
-        
+
         // Redirect after 1 second
         setTimeout(() => {
           router.push("/dashboard");
@@ -60,9 +57,9 @@ export default function LoginPage(): ReactElement {
 
   const handleChange =
     (key: keyof LoginForm) =>
-    (e: ChangeEvent<HTMLInputElement>) => {
-      setForm({ ...form, [key]: e.target.value });
-    };
+      (e: ChangeEvent<HTMLInputElement>) => {
+        setForm({ ...form, [key]: e.target.value });
+      };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
@@ -113,11 +110,10 @@ export default function LoginPage(): ReactElement {
           {/* Message */}
           {msg && (
             <div
-              className={`text-sm text-center p-3 rounded-md ${
-                msg.startsWith("✅")
+              className={`text-sm text-center p-3 rounded-md ${msg.startsWith("✅")
                   ? "bg-green-50 text-green-700 border border-green-200"
                   : "bg-red-50 text-red-700 border border-red-200"
-              }`}
+                }`}
             >
               {msg}
             </div>
