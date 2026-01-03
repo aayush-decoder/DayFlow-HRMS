@@ -1,9 +1,9 @@
 import { getServerAuth } from "@/lib/server-auth"
-import { EmployeeAttendance } from "@/components/attendance/employee-attendance"
-import { AdminAttendance } from "@/components/attendance/admin-attendance"
+import { EmployeeAttendance } from "@/components/dashboard/employee-attendance"
+import { AdminAttendance } from "@/components/dashboard/admin-atendance"
 
-export default function AttendancePage() {
-  const auth = getServerAuth()
+export default async function AttendancePage() {
+  const auth = await getServerAuth()
 
   if (auth?.role === "ADMIN") {
     return <AdminAttendance />

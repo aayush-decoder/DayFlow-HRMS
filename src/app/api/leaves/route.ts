@@ -1,34 +1,13 @@
 // app/api/leaves/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { getUserFromRequest } from "@/lib/roleGuard";
 import { prisma } from "@/lib/prisma";
 import { LeaveType, LeaveDuration, LeaveStatus } from "@prisma/client";
-
-const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-
-interface JwtPayload {
-  userId: string;
-  email: string;
-  role: string;
-  companyId: string;
-}
-
-async function getUserFromToken(req: NextRequest) {
-  const token = req.cookies.get("token")?.value;
-  if (!token) return null;
-
-  try {
-    const { payload } = await jwtVerify(token, secret);
-    return payload as unknown as JwtPayload;
-  } catch {
-    return null;
-  }
-}
 
 // GET - Fetch leave requests
 export async function GET(req: NextRequest) {
   try {
-    const user = await getUserFromToken(req);
+    const user = await getUserFromRequest(req);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -101,7 +80,7 @@ export async function GET(req: NextRequest) {
 // POST - Create leave request
 export async function POST(req: NextRequest) {
   try {
-    const user = await getUserFromToken(req);
+    const user = await getUserFromRequest(req);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

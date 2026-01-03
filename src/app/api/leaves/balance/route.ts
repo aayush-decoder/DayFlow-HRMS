@@ -1,33 +1,12 @@
 // app/api/leaves/balance/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify } from "jose";
+import { getUserFromRequest } from "@/lib/roleGuard";
 import { prisma } from "@/lib/prisma";
-
-const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-
-interface JwtPayload {
-  userId: string;
-  email: string;
-  role: string;
-  companyId: string;
-}
-
-async function getUserFromToken(req: NextRequest) {
-  const token = req.cookies.get("token")?.value;
-  if (!token) return null;
-
-  try {
-    const { payload } = await jwtVerify(token, secret);
-    return payload as unknown as JwtPayload;
-  } catch {
-    return null;
-  }
-}
 
 // GET - Fetch leave balance for current user
 export async function GET(req: NextRequest) {
   try {
-    const user = await getUserFromToken(req);
+    const user = await getUserFromRequest(req);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

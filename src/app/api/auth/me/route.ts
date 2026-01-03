@@ -13,12 +13,27 @@ export async function GET(req: NextRequest) {
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: userToken.id },
+    where: { id: userToken.userId },
     select: {
       id: true,
       email: true,
       role: true,
       companyId: true,
+      employee: {
+        select: {
+          id: true,
+          name: true,
+          department: true,
+          designation: true,
+        },
+      },
+      company: {
+        select: {
+          id: true,
+          name: true,
+          timezone: true,
+        },
+      },
     },
   });
 
@@ -32,6 +47,9 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     id: user.id,
     email: user.email,
-    role: user.role, // enum value: ADMIN | EMPLOYEE
+    role: user.role,
+    companyId: user.companyId,
+    employee: user.employee,
+    company: user.company,
   });
 }

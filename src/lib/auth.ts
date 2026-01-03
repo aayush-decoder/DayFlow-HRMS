@@ -1,7 +1,8 @@
 import bcrypt from "bcrypt";
-import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
+import { jwtVerify } from "jose";
+import { prisma } from "@/lib/prisma";
 
-const JWT_SECRET = process.env.JWT_SECRET || "change_this";
+const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export interface AuthPayload {
   id: string;
@@ -31,87 +32,60 @@ export const comparePassword = async (
   return bcrypt.compare(plain, hash);
 };
 
-export const generateToken = (
-  payload: AuthPayload,
-  opts: SignOptions = { expiresIn: "7d" }
-): string => {
-  return jwt.sign(payload, JWT_SECRET, opts);
-};
-
-export const verifyToken = (
-  token: string
-): AuthPayload | null => {
-  try {
-    return jwt.verify(token, JWT_SECRET) as AuthPayload;
-  } catch {
-    return null;
-  }
-};
-
-// Legacy getAuth function for backward compatibility with attendance APIs
-export function getAuth(req: Request): LegacyAuthPayload {
-  // DEV MODE OVERRIDE (TEMPORARY) // testing
-  if (process.env.NODE_ENV !== "production") {
-    const devUser = req.headers.get("x-dev-user")
-
-    if (devUser === "employee") {
-      return {
-        userId: "dev-user-emp",
-        role: "EMPLOYEE",
-        companyId: "550e8400-e29b-41d4-a716-446655440000",
-        employeeId: "dev-employee"
-      }
-    }
-
-    if (devUser === "admin") {
-      return {
-        userId: "dev-user-admin",
-        role: "ADMIN",
-        companyId: "550e8400-e29b-41d4-a716-446655440000",
-        employeeId: null
-      }
-    }
-  }
-
+// Updated getAuth function to work with the new jose-based authentication
+export async function getAuth(req: Request): Promise<LegacyAuthPayload> {
   // Try to get token from Authorization header first (for API clients)
-  const authHeader = req.headers.get("authorization")
-  if (authHeader) {
-    const token = authHeader.replace("Bearer ", "")
-    const payload = verifyToken(token)
+  const authHeader = req.headers.get("authorization");
+  let token: string | undefined;
+  
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    token = authHeader.substring(7); // Remove "Bearer " prefix
+  } else {
+    // Try to get token from cookie (for web app)
+    const cookieHeader = req.headers.get("cookie");
+    if (cookieHeader) {
+      const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
+        const [key, value] = cookie.trim().split('=');
+        acc[key] = value;
+        return acc;
+      }, {} as Record<string, string>);
+      token = cookies.token;
+    }
+  }
+
+  if (!token) {
+    throw new Error("Unauthorized");
+  }
+
+  try {
+    const { payload } = await jwtVerify(token, secret);
     
-    if (!payload) throw new Error("Unauthorized")
+    if (!payload.userId || !payload.role || !payload.companyId) {
+      throw new Error("Invalid token payload");
+    }
+
+    // For employees, we need to get their employee ID from the database
+    let employeeId: string | null = null;
+    if (payload.role === "EMPLOYEE") {
+      const employee = await prisma.employee.findUnique({
+        where: { userId: payload.userId as string },
+        select: { id: true }
+      });
+      employeeId = employee?.id || null;
+      
+      if (!employeeId) {
+        throw new Error("Employee record not found. Please contact your administrator.");
+      }
+    }
 
     return {
-      userId: payload.id,
-      role: payload.role,
-      companyId: "550e8400-e29b-41d4-a716-446655440000", // Default company for now
-      employeeId: payload.role === "EMPLOYEE" ? payload.id : null
-    }
+      userId: payload.userId as string,
+      role: payload.role as string,
+      companyId: payload.companyId as string,
+      employeeId
+    };
+  } catch (error) {
+    console.error("Token verification failed:", error);
+    throw new Error("Unauthorized");
   }
-
-  // Try to get token from cookie (for web app)
-  const cookieHeader = req.headers.get("cookie")
-  if (cookieHeader) {
-    const cookies = cookieHeader.split(';').reduce((acc, cookie) => {
-      const [key, value] = cookie.trim().split('=')
-      acc[key] = value
-      return acc
-    }, {} as Record<string, string>)
-
-    const token = cookies.token
-    if (token) {
-      const payload = verifyToken(token)
-      
-      if (!payload) throw new Error("Unauthorized")
-
-      return {
-        userId: payload.id,
-        role: payload.role,
-        companyId: "550e8400-e29b-41d4-a716-446655440000", // Default company for now
-        employeeId: payload.role === "EMPLOYEE" ? payload.id : null
-      }
-    }
-  }
-
-  throw new Error("Unauthorized")
 }

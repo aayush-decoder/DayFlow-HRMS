@@ -7,13 +7,15 @@ interface JwtUser {
   userId: string;
   email: string;
   role: string;
+  companyId: string;
 }
 
 function isJwtUser(payload: JWTPayload): payload is JWTPayload & JwtUser {
   return (
     typeof payload.userId === "string" &&
     typeof payload.email === "string" &&
-    typeof payload.role === "string"
+    typeof payload.role === "string" &&
+    typeof payload.companyId === "string"
   );
 }
 
